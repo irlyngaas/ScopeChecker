@@ -3,10 +3,10 @@ Clang tool to check if global variables within lambda's are locally scoped to in
 
 ##Build and Run ScopeChecker
 
-``
+```
 mkdir build 
 cd build && cmake ..
 make
 cd src
-./ScopChecker testFile.cpp
-``
+./ScopeChecker testFile.cpp
+```
