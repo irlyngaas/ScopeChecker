@@ -1,0 +1,5 @@
+/*******************************************************************************
+ * @file config.hpp
+ * @brief Internal configuration macros and variables configured via CMake.
+ ******************************************************************************/
+#cmakedefine PROJECT_NAME "@PROJECT_NAME@"
