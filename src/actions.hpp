@@ -33,7 +33,7 @@ public :
       functionString = current_func_->getNameInfo().getAsString();    
     }
 
-    //Check DREs, if they are in LambdaExpr they can have nonOdrUse -> th
+    //Check DREs, if they are in LambdaExpr and have nonOdrUse -> remove from the list of DRE
     if(DRE->isNonOdrUse()) {
       int index = 0;
       std::vector<int> indexArr;
@@ -51,7 +51,7 @@ public :
       return true;
     }
 
-    //Some DRE in the list are operators from YAKL Array class these should be fine and are taken out of the the list of DRE
+    //Some DRE in the list are operators from YAKL Array class these should be fine, since YAKL is unit tested, and are taken out of the the list of DRE
     
     std::string foundNamespace = DRE->getFoundDecl()->getQualifiedNameAsString();
     if(foundNamespace.find(':') == std::string::npos) {
@@ -65,7 +65,7 @@ public :
 
       std::string mystr = foundNamespace;
       std::size_t pos;
-      //If has namespace qualifier, remove namespace qualifiers till at the root
+      //If has namespace qualifier, remove namespace qualifiers till at the root which gives the name of the DRE
       while(mystr.find(':') != std::string::npos) {
         pos = mystr.find("::");
         mystr = mystr.substr(pos+2);
@@ -129,7 +129,7 @@ public :
     }
 
     //VarDecl of variable with in a FunctionDecl, can delete all matching these from the DRE list
-    //Variables passed within the function get declared at the start of the function, so these are also matched against the DRE
+    //Variables passed within the function get declared at the start of the function, so these are also matched against the DRE from the list
     int index = 0;
     std::vector<int> indexArr;
     for(auto itr : mCollection) {
@@ -147,7 +147,7 @@ public :
 
   }
 
-  //Not need anymore since only accumulating DRE within LambdaExpr
+  //Not need anymore since only accumulating DRE that are within the LambdaExpr
   bool VisitFunctionDecl(FunctionDecl *FD) {
     if(!FD || !Context->getSourceManager().isWrittenInMainFile(FD->getLocation()))
       return true;
@@ -342,25 +342,7 @@ public :
 
   virtual void HandleTranslationUnit(clang::ASTContext &Context) {
     Visitor1.TraverseDecl(Context.getTranslationUnitDecl());
-    //for(auto itr : mOptions) {
-    //  llvm::outs() << itr << " ";
-    //}
-    //llvm::outs() << "\n";
-    //for(auto itr : fOptions) {
-    //  llvm::outs() << itr << " ";
-    //}
-    //llvm::outs() << "\n";
     Visitor2.TraverseDecl(Context.getTranslationUnitDecl());
-    //for(auto itr : mOptions) {
-    //  llvm::outs() << itr << " ";
-    //}
-    //llvm::outs() << "\n";
-    //for(auto itr : fOptions) {
-    //  llvm::outs() << itr << " ";
-    //}
-    //llvm::outs() << "\n";
-
-    //If there are any problematic DRE's left give detailed message of the error location
     if(!mOptions.empty()) {
       Visitor3.TraverseDecl(Context.getTranslationUnitDecl());
     }
