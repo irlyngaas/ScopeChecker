@@ -12,10 +12,10 @@ Clang tool to check if global variables within YAKL_parallel_fors are locally sc
 ## Build and Run ScopeChecker
 
 ```
-export PROJ_DIR=$PROJ_DIR
+export PROJ_DIR=$PATH_to_SAM++_BUILD_DIR
 git clone https://github.com/irlyngaas/ScopeChecker.git
 cd ScopeChecker
-mkdir build && cd build && cmake .. && make 
+mkdir build && cd build && cmake .. && make && cd ..
 ./check-all.py -p $PROJ_DIR/test/buildcompile_commands.json -l build/src/libScopeChecker.so -n ScopeChecker
 ```
 
