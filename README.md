@@ -6,8 +6,8 @@ Clang tool to check if global variables within YAKL_parallel_fors are locally sc
 2. Add -DCMAKE_EXPORT_COMPILE_COMMANDS=1 to cmake command in cmakescript.sh in the build directory
 4. `source thatchroof_env_clang` (export CC=clang; export CXX=clang++;)
 5. Replace YAKL_LAMBDA's because clang doesn't handle macros.  `sed -i s/YAKL_LAMBDA/\[=\]/g' *.cpp`
-6. `./cmakescript.sh && make`
-7. Should now be compile_commands.json file in the build directory
+7. `./cmakescript.sh && make`
+8. Should now be compile_commands.json file in the build directory
 
 
 ## Build and Run ScopeChecker
@@ -18,4 +18,10 @@ git clone https://github.com/irlyngaas/ScopeChecker.git
 cd ScopeChecker
 mkdir build && cd build && cmake .. && make && cd ..
 ./check-all.py -p $PROJ_DIR/test/buildcompile_commands.json -l build/src/libScopeChecker.so -n ScopeChecker
+```
+
+Add YAKL_LAMBDA macros back to the code
+```
+cd ../../..
+sed -i 's/YAKL_LAMBDA/\[=\]/g' *.cpp
 ```
