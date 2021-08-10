@@ -15,6 +15,8 @@
 using namespace clang;
 using namespace clang::tooling;
 
+//Visitor 2
+
 class FindScopeCapture : public RecursiveASTVisitor<FindScopeCapture> {
 public :
   explicit FindScopeCapture(ASTContext *Context, std::vector<std::string>& collection, std::vector<std::string>& funcollection)
@@ -60,7 +62,9 @@ public :
     else {
       std::string leftMost = foundNamespace.substr(0, foundNamespace.find("::", 0));
       //if(leftMost != "yakl" and leftMost !="std")
-      if(leftMost != "yakl")
+      //llvm::outs() << foundNamespace << "\n";
+      //llvm::outs() << leftMost << "\n";
+      if(leftMost != "yakl" and leftMost != "std")
         return true;
 
       std::string mystr = foundNamespace;
@@ -147,26 +151,42 @@ public :
 
   }
 
-  //Not need anymore since only accumulating DRE that are within the LambdaExpr
+  //Visit Function Declarations to find operators passed in by header files that are DREs
   bool VisitFunctionDecl(FunctionDecl *FD) {
-    if(!FD || !Context->getSourceManager().isWrittenInMainFile(FD->getLocation()))
+    if(!FD)
       return true;
-      
+
     std::string foundString = FD->getNameInfo().getAsString();
-    int index = 0;
     std::vector<int> indexArr;
-    for(auto itr : mCollection) {
-      if(foundString == itr) {
-        indexArr.push_back(index);
-        break;
+    int index = 0;
+    if(!Context->getSourceManager().isWrittenInMainFile(FD->getLocation())) {
+      for(auto itr : mCollection) {
+        if(foundString == itr) {
+          indexArr.push_back(index);
+        }
+        index += 1;
       }
-      index +=1;
+      for(unsigned i = indexArr.size()-1; indexArr.size() > i; --i) {
+        mCollection.erase(mCollection.begin()+indexArr[i]);
+        fCollection.erase(fCollection.begin()+indexArr[i]);
+      }
     }
 
-    for(unsigned i = indexArr.size()-1; indexArr.size() > i; --i) {
-      mCollection.erase(mCollection.begin()+indexArr[i]);
-      fCollection.erase(fCollection.begin()+indexArr[i]);
-    }
+    //else {  
+    //  for(auto itr : mCollection) {
+    //    if(foundString == itr) {
+    //      indexArr.push_back(index);
+    //      break;
+    //    }
+    //    index += 1;
+    //  }
+
+    //  for(unsigned i = indexArr.size()-1; indexArr.size() > i; --i) {
+    //    mCollection.erase(mCollection.begin()+indexArr[i]);
+    //    fCollection.erase(fCollection.begin()+indexArr[i]);
+    //  }
+    //}
+
     return true;
   }
 
@@ -187,6 +207,8 @@ private :
   std::vector<std::string>& fCollection;
 
 };
+
+//Visitor1
 
 class FindLambdaRefExpr : public RecursiveASTVisitor<FindLambdaRefExpr> {
 public :
