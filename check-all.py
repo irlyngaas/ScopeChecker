@@ -46,8 +46,12 @@ if __name__ == '__main__':
         #print(d, f, c, '\nINVOK:', invoke(c)); exit()
         #print(d, f, c, '\nINVOK:', invoke(c))
         print(f'Running tool on {f}')
-
-        if search(".F90",f):
-          os.system(f'cd {d} && {invokeFortran(c)}')
-        else:
+        if search(".cpp",f):
           os.system(f'cd {d} && {invoke(c)}')
+        else:
+          os.system(f'cd {d} && {invokeFortran(c)}')
+
+        #if search(".F90",f):
+        #  os.system(f'cd {d} && {invokeFortran(c)}')
+        #elif search(".f90",f):
+        #  os.system(f'cd {d} && {invokeFortran(c)}')

@@ -23,7 +23,8 @@ public :
     : Context(Context), mCollection(collection), fCollection(funcollection) {}
 
   bool VisitDeclRefExpr(DeclRefExpr *DRE) {
-    if(!DRE || !Context->getSourceManager().isWrittenInMainFile(DRE->getLocation()))
+    //if(!DRE || !Context->getSourceManager().isWrittenInMainFile(DRE->getLocation()))
+    if(!DRE)
       return true;
 
     std::string foundString = DRE->getFoundDecl()->getNameAsString();
@@ -34,6 +35,17 @@ public :
     else {
       functionString = current_func_->getNameInfo().getAsString();    
     }
+
+    //  llvm::outs() << foundString << ":" << functionString << " ";
+    //  int index = 0;
+    //  std::vector<int> indexArr;
+    //  for(auto itr : mCollection) {
+    //    if(foundString == itr && functionString == fCollection[index]) {
+    //      indexArr.push_back(index);
+    //    }
+    //    index += 1;
+    //  }
+    //}
 
     //Check DREs, if they are in LambdaExpr and have nonOdrUse -> remove from the list of DRE
     if(DRE->isNonOdrUse()) {
@@ -62,8 +74,6 @@ public :
     else {
       std::string leftMost = foundNamespace.substr(0, foundNamespace.find("::", 0));
       //if(leftMost != "yakl" and leftMost !="std")
-      //llvm::outs() << foundNamespace << "\n";
-      //llvm::outs() << leftMost << "\n";
       if(leftMost != "yakl" and leftMost != "std")
         return true;
 
@@ -91,27 +101,92 @@ public :
     }
   }
 
+  //bool VisitNonTypeTemplateParmDecl(NonTypeTemplateParmDecl *NTTPD) {
+  //  if(!NTTPD)
+  //    return true;
+
+  //  std::string foundString = NTTPD->getNameAsString();
+  //  std::string functionString;
+  //  if(!current_func_) { 
+  //    functionString = "NULL_FUNC";
+  //  }
+  //  else {
+  //    functionString = current_func_->getNameInfo().getAsString();    
+  //  }
+
+  //  //VarDecl of variable with in a FunctionDecl, can delete all matching these from the DRE list
+  //  //Variables passed within the function get declared at the start of the function, so these are also matched against the DRE from the list
+  //  if(functionString == "cells_to_edges")
+  //    llvm::outs() << functionString << " " << foundString << "\n";
+  //  int index = 0;
+  //  std::vector<int> indexArr;
+  //  for(auto itr : mCollection) {
+  //    if(foundString == itr && functionString == fCollection[index]) {
+  //      //llvm::outs() << functionString << "\n";
+  //      indexArr.push_back(index);
+  //    }
+  //    index +=1;
+  //  }
+
+  //  for(unsigned i = indexArr.size()-1; indexArr.size() > i; --i) {
+  //    mCollection.erase(mCollection.begin()+indexArr[i]);
+  //    fCollection.erase(fCollection.begin()+indexArr[i]);
+  //  }
+  //  return true;
+
+
+  //} 
+
   bool VisitVarDecl(VarDecl *VD) {
-    if(!VD || !Context->getSourceManager().isWrittenInMainFile(VD->getLocation()))
+    //if(!VD || !Context->getSourceManager().isWrittenInMainFile(VD->getLocation()))
+    if(!VD)
       return true;
     
     //Not needed anymore since, VarDecls in global namespace aren't listed, only DRE from within LambdaExpr are listed.
-    if(!current_func_) { 
-      std::string foundString = VD->getNameAsString();
-      std::string functionString;
-      if(!current_func_) { 
-        functionString = "NULL_FUNC";
-      }
-      else {
-        functionString = current_func_->getNameInfo().getAsString();    
-      }
+    //if(!current_func_) { 
+    //  std::string foundString = VD->getNameAsString();
+    //  std::string functionString;
+    //  if(!current_func_) { 
+    //    functionString = "NULL_FUNC";
+    //  }
+    //  else {
+    //    functionString = current_func_->getNameInfo().getAsString();    
+    //  }
 
+    //  int index = 0;
+    //  std::vector<int> indexArr;
+    //  for(auto itr : mCollection) {
+    //    if(foundString == itr && functionString == fCollection[index]) {
+    //      indexArr.push_back(index);
+    //      break;
+    //    }
+    //    index +=1;
+    //  }
+
+    //  for(unsigned i = indexArr.size()-1; indexArr.size() > i; --i) {
+    //    mCollection.erase(mCollection.begin()+indexArr[i]);
+    //    fCollection.erase(fCollection.begin()+indexArr[i]);
+    //  }
+    //  return true;
+    //}
+
+    std::string foundString = VD->getNameAsString();
+    std::string functionString;
+    //if(!current_func_) { 
+    //  functionString = "NULL_FUNC";
+    //}
+    //else {
+    functionString = current_func_->getNameInfo().getAsString();    
+    //}
+
+    //VarDecl of variable with in a FunctionDecl, can delete all matching these from the DRE list
+    //Variables passed within the function get declared at the start of the function, so these are also matched against the DRE from the list
+    if(VD->isConstexpr()) {
       int index = 0;
       std::vector<int> indexArr;
       for(auto itr : mCollection) {
-        if(foundString == itr && functionString == fCollection[index]) {
+        if(foundString == itr) {
           indexArr.push_back(index);
-          break;
         }
         index +=1;
       }
@@ -120,32 +195,21 @@ public :
         mCollection.erase(mCollection.begin()+indexArr[i]);
         fCollection.erase(fCollection.begin()+indexArr[i]);
       }
-      return true;
-    }
-
-    std::string foundString = VD->getNameAsString();
-    std::string functionString;
-    if(!current_func_) { 
-      functionString = "NULL_FUNC";
     }
     else {
-      functionString = current_func_->getNameInfo().getAsString();    
-    }
-
-    //VarDecl of variable with in a FunctionDecl, can delete all matching these from the DRE list
-    //Variables passed within the function get declared at the start of the function, so these are also matched against the DRE from the list
-    int index = 0;
-    std::vector<int> indexArr;
-    for(auto itr : mCollection) {
-      if(foundString == itr && functionString == fCollection[index]) {
-        indexArr.push_back(index);
+      int index = 0;
+      std::vector<int> indexArr;
+      for(auto itr : mCollection) {
+        if(foundString == itr && functionString == fCollection[index]) {
+          indexArr.push_back(index);
+        }
+        index +=1;
       }
-      index +=1;
-    }
 
-    for(unsigned i = indexArr.size()-1; indexArr.size() > i; --i) {
-      mCollection.erase(mCollection.begin()+indexArr[i]);
-      fCollection.erase(fCollection.begin()+indexArr[i]);
+      for(unsigned i = indexArr.size()-1; indexArr.size() > i; --i) {
+        mCollection.erase(mCollection.begin()+indexArr[i]);
+        fCollection.erase(fCollection.begin()+indexArr[i]);
+      }
     }
     return true;
 
@@ -159,7 +223,7 @@ public :
     std::string foundString = FD->getNameInfo().getAsString();
     std::vector<int> indexArr;
     int index = 0;
-    if(!Context->getSourceManager().isWrittenInMainFile(FD->getLocation())) {
+    //if(!Context->getSourceManager().isWrittenInMainFile(FD->getLocation())) {
       for(auto itr : mCollection) {
         if(foundString == itr) {
           indexArr.push_back(index);
@@ -170,7 +234,7 @@ public :
         mCollection.erase(mCollection.begin()+indexArr[i]);
         fCollection.erase(fCollection.begin()+indexArr[i]);
       }
-    }
+    //}
 
     //else {  
     //  for(auto itr : mCollection) {
@@ -191,7 +255,8 @@ public :
   }
 
   bool VisitDecl(Decl *decl) {
-    if(!decl || !Context->getSourceManager().isWrittenInMainFile(decl->getLocation()))
+    //if(!decl || !Context->getSourceManager().isWrittenInMainFile(decl->getLocation()))
+    if(!decl)
       return true;
 
     if(decl->isFunctionOrFunctionTemplate())
@@ -224,6 +289,15 @@ public :
     return true;
   }
 
+  bool VisitMemberExpr(MemberExpr *ME) {
+    std::string foundString = ME->getMemberDecl()->getNameAsString();
+    mCollection.push_back(foundString);
+    std::string functionDeclStr = current_func_str.back();
+    fCollection.push_back(functionDeclStr);
+    return true;
+
+  }
+
 private :
   ASTContext *Context;
   std::vector<std::string>& mCollection;
@@ -238,7 +312,8 @@ public :
     : Context(Context), mCollection(collection), fCollection(funcollection), current_func(current), MemberVisitor(Context,collection,funcollection,current) {}
 
   bool VisitLambdaExpr(LambdaExpr *LE) {
-    if(!LE || !Context->getSourceManager().isWrittenInMainFile(LE->getCaptureDefaultLoc()))
+    //if(!LE || !Context->getSourceManager().isWrittenInMainFile(LE->getCaptureDefaultLoc()))
+    if(!LE)
       return true;
 
     const CompoundStmt* LambdaBody = LE->getBody();
@@ -246,11 +321,11 @@ public :
       MemberVisitor.TraverseStmt(Stmt);
     }
     return true;
-
   }
 
   bool VisitDecl(Decl *decl) {
-    if(!decl || !Context->getSourceManager().isWrittenInMainFile(decl->getLocation()))
+    //if(!decl || !Context->getSourceManager().isWrittenInMainFile(decl->getLocation()))
+    if(!decl)
       return true;
 
     if(decl->isFunctionOrFunctionTemplate()) {
@@ -289,7 +364,6 @@ public :
 
     int index = 0;
     for(auto itr : mCollection) {
-      //if(functionString == fCollection[index] && refString == mCollection[index]) {
       if(functionString == fCollection[index] && refString == itr) {
         auto ID = DE.getCustomDiagID(
           clang::DiagnosticsEngine::Error,
@@ -297,12 +371,36 @@ public :
         DE.Report(DRE->getBeginLoc(),ID);
 
         ID = DE.getCustomDiagID(clang::DiagnosticsEngine::Remark,
-          "Consider creating a local copy of the variable in local scope \njust outside the parallel_for.");
+          "Consider creating a local copy of the variable in local scope \njust outside the parallel_for (e.g. YAKL_SCOPE(VARIABLE,::VARIABLE)). If the variable is used in multiple parallel_for's place at the top of the local function scope so this is only needed once.");
         DE.Report(Parent->getBeginLoc(),ID);
       }
       index += 1;
     }
     return true;
+  }
+
+
+  bool VisitMemberExpr(MemberExpr *ME) {
+    std::string refString = ME->getMemberDecl()->getNameAsString();
+    std::string functionString = current_func_->getNameInfo().getAsString();
+    clang::DiagnosticsEngine &DE = Context->getDiagnostics();
+
+    int index = 0;
+    for(auto itr : mCollection) {
+      if(functionString == fCollection[index] && refString == itr) {
+        auto ID = DE.getCustomDiagID(
+          clang::DiagnosticsEngine::Error,
+          "Found global variable that is not referenced in the global scope here.\n");
+        DE.Report(ME->getBeginLoc(),ID);
+
+        ID = DE.getCustomDiagID(clang::DiagnosticsEngine::Remark,
+          "Consider creating a local copy of the variable in local scope \njust outside the parallel_for (e.g YAKL_SCOPE(VARIABLE,this->VARIABLE)). If the variable is used in multiple parallel_for's place at the top of the local function scope so this is only needed once.");
+        DE.Report(Parent->getBeginLoc(),ID);
+      }
+      index += 1;
+    }
+    return true;
+
   }
   
 
@@ -320,7 +418,8 @@ public :
     : Context(Context), mCollection(collection), fCollection(funcollection), MemberVisitor(Context,collection,funcollection) {}
 
   bool VisitLambdaExpr(LambdaExpr *LE) {
-    if(!LE || !Context->getSourceManager().isWrittenInMainFile(LE->getCaptureDefaultLoc()))
+    //if(!LE || !Context->getSourceManager().isWrittenInMainFile(LE->getCaptureDefaultLoc()))
+    if(!LE)
       return true;
 
 
@@ -337,10 +436,10 @@ public :
   }
 
   bool VisitDecl(Decl *decl) {
-    if(!decl || !Context->getSourceManager().isWrittenInMainFile(decl->getLocation()))
+    //if(!decl || !Context->getSourceManager().isWrittenInMainFile(decl->getLocation()))
+    if(!decl)
       return true;
 
-    //llvm::outs() << "GOTHERE\n";
     if(decl->isFunctionOrFunctionTemplate())
       current_func_ = decl->getAsFunction();
     return true;
