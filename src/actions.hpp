@@ -276,6 +276,8 @@ private :
   std::vector<std::string>& current_func;
 };
 
+//Visitor 3
+
 struct MessageDiagnostics : public RecursiveASTVisitor<MessageDiagnostics> {
 public :
   explicit MessageDiagnostics(ASTContext *Context, std::vector<std::string>& collection, std::vector<std::string>& funcollection)

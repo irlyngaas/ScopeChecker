@@ -49,5 +49,7 @@ if __name__ == '__main__':
 
         if search(".F90",f):
           os.system(f'cd {d} && {invokeFortran(c)}')
+        elif search(".f90",f):
+          os.system(f'cd {d} && {invokeFortran(c)}')
         else:
           os.system(f'cd {d} && {invoke(c)}')
