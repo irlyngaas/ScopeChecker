@@ -5,7 +5,7 @@ Clang tool to check if global variables within YAKL_parallel_fors are locally sc
 1. Needs a functional Clang C/C++ compiler version >=10.0. Currently no issues cross-compiling using a gnu fortran compiler
 2. Add -DCMAKE_EXPORT_COMPILE_COMMANDS=1 to cmake command in cmakescript.sh in the build directory
 4. `source thatchroof_env_clang` (export CC=clang; export CXX=clang++;)
-5. Replace YAKL_LAMBDA's because clang doesn't handle macros.  `sed -i s/YAKL_LAMBDA/\[=\]/g' *.cpp`
+5. Replace YAKL_LAMBDA's because clang doesn't handle macros.  `sed -i 's/YAKL_LAMBDA/\[=\]/g' *.cpp`
 7. `./cmakescript.sh && make`
 8. Should now be compile_commands.json file in the build directory
 
